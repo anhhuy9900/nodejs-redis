@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  nodejs:
+    container_name: redis_node_app
+    command: npm run start:dev
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 3500:3500
+    volumes:
+      - ./:/home/node/redis-node-app/
+    depends_on:
+      - redis
+    links:
+      - redis
+  redis:
+    image: redis:latest
+    hostname: redis
+    container_name: redis_db_app
+    #command: ["redis-server", "--bind", "redis", "--port", "6379"]
+    ports:
+      - 6380:6379
+    expose:
+      - 6380
+    volumes:
+      - ./redis-data:/data
+    restart: unless-stopped
+    # networks:
+    #   - network
+
+networks:
+  network:
+    driver: bridge
