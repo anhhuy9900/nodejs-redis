@@ -13,7 +13,6 @@ class Redis {
      * Redis connect with server cache
      */
     async connect(): Promise<void> {
-        console.log("====== Redis Init =========");
         if (!this.client) {
             await new Promise((resolve, reject) => {
                 this.client = new IORedis(connection);

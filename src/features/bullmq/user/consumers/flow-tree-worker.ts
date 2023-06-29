@@ -1,8 +1,8 @@
 import {
     Job,
   } from "bullmq";
-import { BullMQ } from '../../../core/bullmq';
-import { QUEUE_USER, QUEUE_USER_PROFILE, QUEUE_USER_SEND_MAIL, QUEUE_USER_ACTIONS } from '../../../config/constants';
+import { BullMQ } from '../../../../core/bullmq';
+import { QUEUE_USER, QUEUE_USER_PROFILE, QUEUE_USER_SEND_MAIL, QUEUE_USER_ACTIONS } from '../../../../config/constants';
 
 const bullMQ = new BullMQ();
 (async() => {

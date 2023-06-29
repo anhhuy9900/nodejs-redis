@@ -6,12 +6,11 @@ export interface RedisConnection {
     maxRetriesPerRequest?: number | null;
 };
 
+//const redisUrl = 'redis://localhost:6379';
 export const connection: RedisConnection = {
     host: REDIS_HOST,
     port: REDIS_PORT,
     password: REDIS_PASSWORD,
-    // maxRetriesPerRequest: null,
+    maxRetriesPerRequest: null,
 };
-console.log('====== REDIS connection =======> ', connection)
 
-//const redisUrl = 'redis://localhost:6379';

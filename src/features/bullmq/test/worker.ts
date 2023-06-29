@@ -1,16 +1,11 @@
 import {
     Job,
   } from "bullmq";
-import { BullMQ } from '../../core/bullmq';
-import { QUEUE_TEST, QUEUE_FLOW_CHILD_TEST } from '../../config/constants';
+import { BullMQ } from '../../../core/bullmq';
+import { QUEUE_TEST } from '../../../config/constants';
 
-(async() => {
+export default async() => {
     const bullMQ = new BullMQ();
-    // const worker = await bullMQ.runWorker(QUEUE_FLOW_CHILD_TEST, async (job) => {
-    //     console.log('getWorker - job: ', job.data)}
-    // );
-    //console.log('worker: ', worker);
-
     //Test flow tree
     const worker = await bullMQ.runWorker({
         queueName: QUEUE_TEST,
@@ -29,4 +24,4 @@ import { QUEUE_TEST, QUEUE_FLOW_CHILD_TEST } from '../../config/constants';
         },
         
     });
-})();
+};

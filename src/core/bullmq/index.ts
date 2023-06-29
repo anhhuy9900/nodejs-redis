@@ -6,6 +6,7 @@ import {
   QueueEvents,
   FlowProducer,
   JobNode,
+  FlowOpts,
 } from "bullmq";
 import IORedis from 'ioredis';
 import {
@@ -44,32 +45,26 @@ export class BullMQ implements IBullMQ {
         backoff: 500,
       },
     };
+    
   }
 
   async initial() {    
     this.connection = new IORedis(redisConnection);
     this.connection.on("connect", () => {
         console.log("BullMQ - Redis was connected");
+        // this.queue = new Queue("", {
+        //   connection: this.connection,
+        //   defaultJobOptions: {
+        //     attempts: 5,
+        //     backoff: 500,
+        //   },
+        // });
+        // this.queueScheduler = new QueueScheduler("", { connection: this.connection });
+        // this.queueEvents = new QueueEvents("", { connection: this.connection });
     });
     this.connection.on("error", function(error: Object) {
         console.log("BullMQ - Redis has error : ", error);
     });
-
-    //if (this.connection) {
-      // this.queue = new Queue("", {
-      //   connection: this.connection,
-      //   defaultJobOptions: {
-      //     attempts: 5,
-      //     backoff: 500,
-      //   },
-      // });
-      // this.queueScheduler = new QueueScheduler("", { connection: this.connection });
-      // this.worker = new Worker("", async (job) => {}, {
-      //   connection: this.connection,
-      // });
-      // this.queueEvents = new QueueEvents("", { connection: this.connection });
-      // this.flow = new FlowProducer({ connection: this.connection });
-    //}
   }
 
   async setQueue(queueName: string): Promise<this> {
@@ -84,10 +79,10 @@ export class BullMQ implements IBullMQ {
    * @param queueName 
    * @returns 
    */
-  async getQueue(queueName: string): Promise<this> {
+  async getQueue(queueName: string): Promise<Job | any> {
     console.log('========= BullMQ - getQueue ====== ')    
-    this.queue = new Queue(queueName, { ...this.queueConfig });
-    return this;
+    const queue = new Queue(queueName, { ...this.queueConfig });
+    return queue;
   }
 
   async addQueue(
@@ -132,7 +127,6 @@ export class BullMQ implements IBullMQ {
     onWaiting = (_job: Job) => {},
     onFailed = (_job: Job) => {}
   }: WorkerBody): Promise<Worker> {
-    console.log('========= BullMQ - runWorker ======')
     this.worker = new Worker(
       queueName,
       async (job) => {
@@ -143,19 +137,19 @@ export class BullMQ implements IBullMQ {
     );
     this.worker.on("completed", (job: Job) => {
       console.log("Job worker completed with job: ", job.id);
-      onCompleted(job);
+      return onCompleted(job);
     });
     this.worker.on("progress", (job: Job) => {
       console.log("Job worker progress with job: ", job.id);
-      onProgress(job);
+      return onProgress(job);
     });
     this.worker.on("waiting", (job: Job) => {
       console.log("Job worker waiting with job: ", job.id);
-      onWaiting(job);
+      return onWaiting(job);
     });
     this.worker.on("failed", (job: Job) => {
       console.log("Job worker failed with job: ", job.id);
-       onFailed(job);
+      return onFailed(job);
     });
     return this.worker;
   }
@@ -205,18 +199,32 @@ export class BullMQ implements IBullMQ {
     return this.queue.getJob(id);
   }
 
-  async addFlowProducer(params: FlowProducerParams): Promise<JobNode> {
+  async addFlowProducer(params: FlowProducerParams, opts?: FlowOpts): Promise<JobNode> {
     console.log('========= BullMQ - addFlowProducer ======')
-    // const flow = new FlowProducer({ connection: this.connection });
+    const flowProducer = this.connectFlowProducer();
 
-    const originalTree = await this.flow.add(params);
+    const queuesOptions = {
+      defaultJobOptions: {
+        attempts: 2,
+        backoff: 6000,
+      },
+    }
+    const originalTree = await flowProducer.add(params, { queuesOptions } as FlowOpts);
+
+    await flowProducer.disconnect();
+
     return originalTree;
   }
 
   async getFlowProducer(params: GetFlowProducerParams): Promise<JobNode> {
     console.log('========= BullMQ - getFlowProducer ======')
-    const tree = await this.flow.getFlow(params);
+    const flowProducer = this.connectFlowProducer();
+    const tree = await flowProducer.getFlow(params);
     return tree;
+  }
+
+  connectFlowProducer() {
+    return new FlowProducer({ connection: this.connection });
   }
 
   private failedReason(arg0: string, failedReason: any) {

@@ -1,7 +1,7 @@
 import express from 'express';
 import { faker } from '@faker-js/faker';
 import { BullMQ } from '../../../core/bullmq';
-import { QUEUE_USER } from '../../../config/constants';
+import { QUEUE_USER, QUEUE_USER_PROFILE, QUEUE_USER_SEND_MAIL } from '../../../config/constants';
 
 
 const app = express.Router();
@@ -58,6 +58,56 @@ app.post("/create-multi", async (req, res) => {
         const queue = await getQueue();
         await queue.addBulk(data);
 
+        return res.status(200).send(body);	
+    } catch(err: any) {
+        console.log("🚀 ~ ioredis/pub-user ~ err: ", err);
+        res.status(500).send({message: err.message});
+    }
+});
+
+app.post("/create-flow", async (req, res) => {
+    try {
+        console.log("🚀 create - user ~ req: ", req.body);
+        const bullMQ = new BullMQ();
+        const body = req.body;
+        const data = {
+            ...body,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        }
+        //add flow tree
+        const userTree = await bullMQ.addFlowProducer({
+            name: "Create User",
+            queueName: QUEUE_USER,
+            data: {
+                title: "Create User profile and send mail to user",
+                ...data,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            children: [
+              {
+                queueName: QUEUE_USER_PROFILE,
+                name: "Create User Profile",
+                data: {
+                    ...data,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                }
+              },
+              {
+                queueName: QUEUE_USER_SEND_MAIL,
+                name: "Send mail to user",
+                data: {
+                    email: data.email,
+                    subject: 'Create User',
+                    from: 'admin@email.com',
+                    to: 'test@email.com',
+                    createdAt: new Date(),
+                }
+              },
+            ],
+          });
         return res.status(200).send(body);	
     } catch(err: any) {
         console.log("🚀 ~ ioredis/pub-user ~ err: ", err);

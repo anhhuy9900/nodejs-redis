@@ -8,9 +8,9 @@ const routes = express.Router();
 
 routes.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 routes.use(bodyParser.json());
-routes.use('/redis/placeholder', TestPostPlaceholder);
-routes.use('/redis/bullmq/user', UserBullMQ);
-routes.use('/redis/bullmq', TestBullMQ);
+routes.use('/placeholder', TestPostPlaceholder);
+routes.use('/user', UserBullMQ);
+routes.use('/bullmq', TestBullMQ);
 
 
 export default routes;
