@@ -95,17 +95,17 @@ app.post("/create-flow", async (req, res) => {
                     updatedAt: new Date(),
                 }
               },
-              {
-                queueName: QUEUE_USER_SEND_MAIL,
-                name: "Send mail to user",
-                data: {
-                    email: data.email,
-                    subject: 'Create User',
-                    from: 'admin@email.com',
-                    to: 'test@email.com',
-                    createdAt: new Date(),
-                }
-              },
+            //   {
+            //     queueName: QUEUE_USER_SEND_MAIL,
+            //     name: "Send mail to user",
+            //     data: {
+            //         email: data.email,
+            //         subject: 'Create User',
+            //         from: 'admin@email.com',
+            //         to: 'test@email.com',
+            //         createdAt: new Date(),
+            //     }
+            //   },
             ],
           });
         return res.status(200).send(body);	

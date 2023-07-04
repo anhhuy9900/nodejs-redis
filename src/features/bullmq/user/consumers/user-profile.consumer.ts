@@ -13,6 +13,7 @@ export const UserProfileConsumer = async() => {
         queueName: QUEUE_USER_PROFILE,
         onJob: (job: Job) => {
             console.log('QUEUE_USER_PROFILE - onJob - job: ', job.data);
+            
         },
         onProgress: (job: Job) => {
             job.updateProgress(50);
@@ -21,10 +22,16 @@ export const UserProfileConsumer = async() => {
                 
                 //throw new Error('FAILED JOB QUEUE_USER_PROFILE');
             }
+            let count = 0, total = 10000000;
+            for(let i = 0; i < total; i++) {
+                count++;
+            }
+            console.log('QUEUE_USER_PROFILE - onProgress - count: ', count);
             job.updateProgress(100);
         },
         onCompleted: (job: Job) => {
             console.log('QUEUE_USER_PROFILE - onCompleted - job: ', job.data);
+            
         }
     });
 };
