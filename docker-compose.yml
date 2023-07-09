@@ -12,9 +12,11 @@ services:
     volumes:
       - ./:/home/node/redis-node-app/
     depends_on:
-      - redis
+      #- redis
+      - redis-stack-server
     links:
-      - redis
+      #- redis
+      - redis-stack-server
   redis:
     image: redis:latest
     hostname: redis
@@ -29,6 +31,18 @@ services:
     restart: unless-stopped
     # networks:
     #   - network
+  redis-stack-server:
+    container_name: redis-stack-server
+    image: redis/redis-stack-server:latest
+    command: redis-server --save 20 1 --loglevel warning --protected-mode no --loadmodule /opt/redis-stack/lib/redisearch.so --loadmodule /opt/redis-stack/lib/rejson.so
+    environment:
+      - REDIS_ARGS=--save 1200 32
+    volumes:
+       - ./redis-stack-data:/data
+    ports:
+      - 6382:6379
+    expose:
+      - 6382
 
 networks:
   network:
